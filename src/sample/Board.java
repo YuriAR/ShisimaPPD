@@ -17,11 +17,9 @@ public class Board {
     private Boolean movingPiece = false;
     private Integer moveFrom;
     private Integer moveTo;
+    private Boolean myTurn = true;
 
     public void initializeBoard(){
-        localPlayerPieces.add(1);
-        localPlayerPieces.add(2);
-        localPlayerPieces.add(3);
         for (int i=1;i<10;i++){
             if (i<4 || i > 6){
                 board.put(i,true);
@@ -32,6 +30,13 @@ public class Board {
 
         }
         resetMove();
+    }
+
+    public void remoteMove(Integer from, Integer to){
+        myTurn = false;
+        moveFrom = from;
+        moveTo = to;
+        makeMove();
     }
 
     public Boolean beginMove(Integer from){
@@ -64,14 +69,17 @@ public class Board {
     private void makeMove(){
         board.replace(moveFrom,false);
         board.replace(moveTo,true);
-        localPlayerPieces.remove(moveFrom);
-        localPlayerPieces.add(moveTo);
-        resetMove();
+        if (myTurn){
+            localPlayerPieces.remove(moveFrom);
+            localPlayerPieces.add(moveTo);
+        }
     }
 
     public void revertMove(){
         board.replace(moveFrom,true);
         board.replace(moveTo,false);
+        localPlayerPieces.remove(moveTo);
+        localPlayerPieces.add(moveFrom);
     }
 
     public void resetMove(){
@@ -86,5 +94,30 @@ public class Board {
 
     public List<Integer> getLocalPlayerPieces() {
         return localPlayerPieces;
+    }
+
+    public void setMyTurn(Boolean myTurn) {
+        this.myTurn = myTurn;
+    }
+
+    public Integer getMoveFrom() {
+        return moveFrom;
+    }
+
+    public Integer getMoveTo() {
+        return moveTo;
+    }
+
+    public void setLocalPlayer(Integer playerNumber){
+        if (playerNumber == 1){
+            localPlayerPieces.add(1);
+            localPlayerPieces.add(2);
+            localPlayerPieces.add(3);
+        }
+        else{
+            localPlayerPieces.add(7);
+            localPlayerPieces.add(8);
+            localPlayerPieces.add(9);
+        }
     }
 }
