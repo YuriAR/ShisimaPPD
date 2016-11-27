@@ -68,10 +68,7 @@ public class Network{
         }
     }
 
-    //####### message - Code 1 ######### [message = 1-msg]
-    public void handleChatMessage(String msg){
-        listener.onChatMessageReceived(msg);
-    }
+    //####### Send messages
 
     public void sendChatMessage(String message){
         if (message.equals("")){
@@ -86,13 +83,7 @@ public class Network{
         }
     }
 
-    //##### (move from - to) - Code  2 ###### [message = 2-from.to]
-    private void handleMoveMessage(String message){
-        Integer from = Integer.parseInt(message.split("\\.")[0]);
-        Integer to = Integer.parseInt(message.split("\\.")[1].split("\\|")[0]);
-        Integer reversed = Integer.parseInt(message.split("\\.")[1].split("\\|")[1]);
-        listener.onMoveMessageReceived(from, to, reversed);
-    }
+
 
     public void sendConditionMessage(ConditionType type){
         if (type == ConditionType.COMPLAINT){
@@ -147,54 +138,12 @@ public class Network{
         }
     }
 
-    private void handleConfirmationMessage(String message){
-        Integer status = Integer.parseInt(message.split("\\.")[0]);
-        Integer type = Integer.parseInt(message.split("\\.")[1]);
-        switch (type){
-            case 0:
-                listener.onConditionConfirmation(ConditionType.VICTORY, status);
-                break;
-            case 1:
-                listener.onConditionConfirmation(ConditionType.DRAW, status);
-                break;
+    public void sendRestartMessage(){
+        try {
+            outToServer.writeUTF("6-0");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
-
-    //###### Win(code 1), draw (code 2), complaint move (code 3) - Code 3 ####### [message = 3-code]
-    private void handleConditionMessage(String message){
-        Integer type = Integer.parseInt(message);
-        if (type == 1){
-            listener.onConditionMessageReceived(ConditionType.VICTORY);
-//            if (sentVictoryCondition){
-//                sentVictoryCondition = false;
-//                listener.onConditionConfirmation(ConditionType.VICTORY);
-//            }
-//            else{
-//
-//            }
-        }
-        else if (type == 2){
-            listener.onConditionMessageReceived(ConditionType.DRAW);
-//            if (sentDrawCondition){
-//                sentDrawCondition = false;
-//                listener.onConditionConfirmation(ConditionType.DRAW);
-//            }
-//            else{
-//
-//            }
-        }
-        else{
-            listener.onConditionMessageReceived(ConditionType.COMPLAINT);
-        }
-    }
-
-    private void sendConditionMessage(Integer condition){
-
-    }
-
-
-    private void handleConnectionMessage(String message){
-        listener.onConnectionMessageReceived(Integer.parseInt(message));
     }
 
     private void receiveMessage(String message){
@@ -217,6 +166,66 @@ public class Network{
         else if (code.equals("4")){
             handleConfirmationMessage(message.split("-")[1]);
         }
+        else if (code.equals("5")){
+            handleDisconnectionMessage();
+        }
+        else if (code.equals("6")){
+            handleRestartMessage();
+        }
+    }
+
+    //######### Handlers
+
+    private void handleConnectionMessage(String message){
+        listener.onConnectionMessageReceived(Integer.parseInt(message));
+    }
+
+    private void handleDisconnectionMessage(){
+        listener.onDisconnectionMessageReceived();
+    }
+
+    //Win(code 1), draw (code 2), complaint move (code 3) - Code 3 ####### [message = 3-code]
+    private void handleConditionMessage(String message){
+        Integer type = Integer.parseInt(message);
+        if (type == 1){
+            listener.onConditionMessageReceived(ConditionType.VICTORY);
+        }
+        else if (type == 2){
+            listener.onConditionMessageReceived(ConditionType.DRAW);
+        }
+        else{
+            listener.onConditionMessageReceived(ConditionType.COMPLAINT);
+        }
+    }
+
+    private void handleConfirmationMessage(String message){
+        Integer status = Integer.parseInt(message.split("\\.")[0]);
+        Integer type = Integer.parseInt(message.split("\\.")[1]);
+        switch (type){
+            case 0:
+                listener.onConditionConfirmationReceived(ConditionType.VICTORY, status);
+                break;
+            case 1:
+                listener.onConditionConfirmationReceived(ConditionType.DRAW, status);
+                break;
+        }
+    }
+
+    // (move from - to) - Code  2 ###### [message = 2-from.to]
+    private void handleMoveMessage(String message){
+        Integer from = Integer.parseInt(message.split("\\.")[0]);
+        Integer to = Integer.parseInt(message.split("\\.")[1].split("\\|")[0]);
+        Integer reversed = Integer.parseInt(message.split("\\.")[1].split("\\|")[1]);
+        listener.onMoveMessageReceived(from, to, reversed);
+    }
+
+    //message - Code 1 ######### [message = 1-msg]
+    private void handleChatMessage(String msg){
+        listener.onChatMessageReceived(msg);
+    }
+
+    private void handleRestartMessage(){
+        listener.onRestartMessageReceived();
     }
 
     public interface NetworkMessaging{
@@ -224,6 +233,8 @@ public class Network{
         void onMoveMessageReceived(Integer from, Integer to, Integer reversed);
         void onConditionMessageReceived(ConditionType type);
         void onConnectionMessageReceived(Integer playerNumber);
-        void onConditionConfirmation(ConditionType type, Integer status);
+        void onConditionConfirmationReceived(ConditionType type, Integer status);
+        void onDisconnectionMessageReceived();
+        void onRestartMessageReceived();
     }
 }

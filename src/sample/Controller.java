@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -7,8 +8,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -46,9 +50,11 @@ public class Controller implements Initializable, Network.NetworkMessaging{
     @FXML
     Button buttonComplaint;
     @FXML
-    Button buttonAccept;
+    Button buttonRestart;
     @FXML
     Button buttonSendMsg;
+    @FXML
+    GridPane gridCircles;
 
     Board board= new Board();
     Network network = new Network(this);
@@ -160,6 +166,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
                 network.sendConditionMessage(Network.ConditionType.COMPLAINT);
+                disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -174,6 +181,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
                 network.sendConditionMessage(Network.ConditionType.VICTORY);
+                disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -187,6 +195,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             @Override
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
+                disableSelection();
                 network.sendConditionMessage(Network.ConditionType.DRAW);
                 Platform.runLater(new Runnable() {
                     @Override
@@ -197,7 +206,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             }
         });
 
-        buttonAccept.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        buttonRestart.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
@@ -244,7 +253,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             @Override
             public void run() {
                 buttonWin.setDisable(false);
-                buttonAccept.setDisable(false);
+                buttonRestart.setDisable(false);
                 buttonDraw.setDisable(false);
                 buttonComplaint.setDisable(false);
                 circle1.setDisable(false);
@@ -265,7 +274,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             @Override
             public void run() {
                 buttonWin.setDisable(true);
-                buttonAccept.setDisable(true);
+                buttonRestart.setDisable(true);
                 buttonDraw.setDisable(true);
                 buttonComplaint.setDisable(true);
                 circle1.setDisable(true);
@@ -294,6 +303,14 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                 circle7.setFill(board.getBoard().get(7) ? board.getLocalPlayerPieces().contains(7) ? Color.RED : Color.BLUE : Color.BLACK);
                 circle8.setFill(board.getBoard().get(8) ? board.getLocalPlayerPieces().contains(8) ? Color.RED : Color.BLUE : Color.BLACK);
                 circle9.setFill(board.getBoard().get(9) ? board.getLocalPlayerPieces().contains(9) ? Color.RED : Color.BLUE : Color.BLACK);
+
+//                Line line = new Line();
+//                line.startXProperty().bind(circle1.centerXProperty().add(circle1.translateXProperty()));
+//                line.startYProperty().bind(circle1.centerYProperty().add(circle1.translateYProperty()));
+//                line.endXProperty().bind(circle2.centerXProperty().add(circle2.translateXProperty()));
+//                line.endYProperty().bind(circle2.centerYProperty().add(circle2.translateYProperty()));
+//
+//                gridCircles.getChildren().add(line);
             }
         });
     }
@@ -333,6 +350,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                                 statusText.setText("DERROTA :(");
                             }
                         });
+                        disableSelection();
                         network.sendConfirmationMessage(Network.ConditionType.VICTORY, 1);
                         alert.close();
                     }
@@ -344,6 +362,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                                 statusText.setText("Vitória rejeitada. O jogo continua...");
                             }
                         });
+                        disableSelection();
                         network.sendConfirmationMessage(Network.ConditionType.VICTORY, 0);
                         alert.close();
                     }
@@ -367,6 +386,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                                 statusText.setText("EMPATE :(");
                             }
                         });
+                        disableSelection();
                         network.sendConfirmationMessage(Network.ConditionType.DRAW, 1);
                         alert.close();
                     }
@@ -379,6 +399,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                                 statusText.setText("Empate rejeitado. O jogo continua...");
                             }
                         });
+                        disableSelection();
                         alert.close();
                     }
                 }
@@ -420,23 +441,66 @@ public class Controller implements Initializable, Network.NetworkMessaging{
     public void onConnectionMessageReceived(Integer playerNumber) {
         board.setLocalPlayer(playerNumber);
         board.initializeBoard();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                statusText.setText("Jogo iniciado!");
-            }
-        });
 
         //Print jogo iniciado
+        if (playerNumber == 1){
+            enableSelection();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    statusText.setText("Jogo iniciado! Você começa");
+                }
+            });
+        }
+        else{
+            disableSelection();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    statusText.setText("Jogo iniciado! Aguardando vez do jogador remoto...");
+                }
+            });
+        }
         refreshUI();
-        enableSelection();
+
     }
 
     @Override
-    public void onConditionConfirmation(Network.ConditionType type, Integer status) {
+    public void onDisconnectionMessageReceived() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Player remoto desconectou! Deseja procurar outro player?", ButtonType.YES, ButtonType.NO);
+                alert.showAndWait();
+
+                if (alert.getResult() == ButtonType.YES) {
+                    network.startConnection();
+                    disableSelection();
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            statusText.setText("Aguardando player remoto...");
+                        }
+                    });
+                    alert.close();
+                }
+
+                if (alert.getResult() == ButtonType.NO){
+                    //Close app
+                    alert.close();
+                    Platform.exit();
+                    System.exit(0);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onConditionConfirmationReceived(Network.ConditionType type, Integer status) {
         if (type == Network.ConditionType.VICTORY){
             if (status == 1){
                 //GANHEI
+                disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -446,10 +510,11 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             }
             else{
                 //NAO CONFIRMADO, CONTINUA O JOGO
+                enableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        statusText.setText("Vitória rejeitada. O jogo continua...");
+                        statusText.setText("Vitória rejeitada. O jogo continua... Sua vez");
                     }
                 });
             }
@@ -457,6 +522,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
         else if (type == Network.ConditionType.DRAW){
             if (status == 1){
                 //EMPATE
+                disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -466,13 +532,19 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             }
             else{
                 //NAO CONFIRMADO, CONTINUA O JOGO
+                enableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        statusText.setText("Empate rejeitado. O jogo continua...");
+                        statusText.setText("Empate rejeitado. O jogo continua... Sua vez");
                     }
                 });
             }
         }
+    }
+
+    @Override
+    public void onRestartMessageReceived() {
+
     }
 }
