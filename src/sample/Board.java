@@ -18,6 +18,7 @@ public class Board {
     private Integer moveFrom;
     private Integer moveTo;
     private Boolean myTurn = true;
+    private Integer myPlayer;
 
     public void initializeBoard(){
         for (int i=1;i<10;i++){
@@ -108,8 +109,8 @@ public class Board {
         return moveTo;
     }
 
-    public void setLocalPlayer(Integer playerNumber){
-        if (playerNumber == 1){
+    public void setLocalPlayer(){
+        if (myPlayer == 1){
             localPlayerPieces.add(1);
             localPlayerPieces.add(2);
             localPlayerPieces.add(3);
@@ -119,5 +120,13 @@ public class Board {
             localPlayerPieces.add(8);
             localPlayerPieces.add(9);
         }
+    }
+
+    public void setMyPlayer(Integer myPlayer) {
+        this.myPlayer = myPlayer;
+    }
+
+    public Integer getMyPlayer() {
+        return myPlayer;
     }
 }

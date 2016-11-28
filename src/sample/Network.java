@@ -16,13 +16,10 @@ public class Network{
     private DataInputStream inFromServer;
     private NetworkMessaging listener;
 
-//    private Boolean sentVictoryCondition = false;
-//    private Boolean sentDrawCondition = false;
-
     public enum ConditionType{
         VICTORY,
         DRAW,
-        COMPLAINT;
+        COMPLAINT
     }
 
     public Network(NetworkMessaging listener){
@@ -138,9 +135,9 @@ public class Network{
         }
     }
 
-    public void sendRestartMessage(){
+    public void sendRestartMessage(String confirmation){
         try {
-            outToServer.writeUTF("6-0");
+            outToServer.writeUTF("6-" + confirmation);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -170,7 +167,7 @@ public class Network{
             handleDisconnectionMessage();
         }
         else if (code.equals("6")){
-            handleRestartMessage();
+            handleRestartMessage(message.split("-")[1]);
         }
     }
 
@@ -224,8 +221,8 @@ public class Network{
         listener.onChatMessageReceived(msg);
     }
 
-    private void handleRestartMessage(){
-        listener.onRestartMessageReceived();
+    private void handleRestartMessage(String msg){
+        listener.onRestartMessageReceived(msg);
     }
 
     public interface NetworkMessaging{
@@ -235,6 +232,6 @@ public class Network{
         void onConnectionMessageReceived(Integer playerNumber);
         void onConditionConfirmationReceived(ConditionType type, Integer status);
         void onDisconnectionMessageReceived();
-        void onRestartMessageReceived();
+        void onRestartMessageReceived(String message);
     }
 }
