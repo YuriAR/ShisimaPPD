@@ -63,12 +63,15 @@ public class Controller implements Initializable, Network.NetworkMessaging{
     public void initialize(URL location, ResourceBundle resources) {
         //Initialize logic
 
+        Line line1 = new Line(gridCircles.getChildren().get(0).getLayoutX(), gridCircles.getChildren().get(0).getLayoutY(), gridCircles.getChildren().get(1).getLayoutX(), gridCircles.getChildren().get(0).getLayoutY());
+        gridCircles.getChildren().add(line1);
         network.startConnection();
         disableSelection();
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 statusText.setText("Aguardando player remoto...");
+
             }
         });
 

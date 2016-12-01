@@ -73,7 +73,6 @@ public class Network{
         }
         try{
             outToServer.writeUTF("1-" + message);
-            //outToServer.flush();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -93,7 +92,6 @@ public class Network{
         else if (type == ConditionType.VICTORY){
             try {
                 outToServer.writeUTF("3-1");
-//                sentVictoryCondition = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -101,7 +99,6 @@ public class Network{
         else{
             try {
                 outToServer.writeUTF("3-2");
-//                sentDrawCondition = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -149,34 +146,43 @@ public class Network{
         String code = message.split("-")[0];
 
         if (code.equals("0")){
+            //connection - Code 0 ####### [message = 0-player]
             handleConnectionMessage(message.split("-")[1]);
         }
         else if (code.equals("1")){
+            //message - Code 1 ######### [message = 1-msg]
             handleChatMessage(message.split("-")[1]);
         }
         else if (code.equals("2")){
+            //move - Code  2 ###### [message = 2-from.to]
             handleMoveMessage(message.split("-")[1]);
         }
         else if (code.equals("3")){
+            //Win(code 1), draw (code 2), complaint move (code 3) - Code 3 ####### [message = 3-code]
             handleConditionMessage(message.split("-")[1]);
         }
         else if (code.equals("4")){
+            //Code 4 ########## [message = 4-status.type]
             handleConfirmationMessage(message.split("-")[1]);
         }
         else if (code.equals("5")){
+            //Code 5 ######### [message = 5]
             handleDisconnectionMessage();
         }
         else if (code.equals("6")){
+            //Code 6 ######### [message = 6-status]
             handleRestartMessage(message.split("-")[1]);
         }
     }
 
     //######### Handlers
 
+    //connection - Code 0 ####### [message = 0-player]
     private void handleConnectionMessage(String message){
         listener.onConnectionMessageReceived(Integer.parseInt(message));
     }
 
+    //Code 5 ######### [message = 5]
     private void handleDisconnectionMessage(){
         listener.onDisconnectionMessageReceived();
     }
@@ -195,6 +201,7 @@ public class Network{
         }
     }
 
+    //Code 4 ########## [message = 4-status.type]
     private void handleConfirmationMessage(String message){
         Integer status = Integer.parseInt(message.split("\\.")[0]);
         Integer type = Integer.parseInt(message.split("\\.")[1]);
@@ -208,7 +215,7 @@ public class Network{
         }
     }
 
-    // (move from - to) - Code  2 ###### [message = 2-from.to]
+    //move - Code  2 ###### [message = 2-from.to]
     private void handleMoveMessage(String message){
         Integer from = Integer.parseInt(message.split("\\.")[0]);
         Integer to = Integer.parseInt(message.split("\\.")[1].split("\\|")[0]);
