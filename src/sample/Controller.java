@@ -66,6 +66,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
         Line line1 = new Line(gridCircles.getChildren().get(0).getLayoutX(), gridCircles.getChildren().get(0).getLayoutY(), gridCircles.getChildren().get(1).getLayoutX(), gridCircles.getChildren().get(0).getLayoutY());
         gridCircles.getChildren().add(line1);
         network.startConnection();
+        board.setMyPlayer(network.getMyPlayer());
         disableSelection();
         Platform.runLater(new Runnable() {
             @Override
@@ -84,7 +85,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             public void handle(ActionEvent event) {
                 if (!chatField.getText().equals("")){
                     chat.appendText("Você >> " + chatField.getText() + "\n");
-                    network.sendChatMessage(chatField.getText());
+                    network.sendChatMessage(chatField.getText(), board.getMyPlayer());
                 }
                 chatField.clear();
             }
@@ -95,7 +96,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             public void handle(MouseEvent event) {
                 if (!chatField.getText().equals("")){
                     chat.appendText("Você >> " + chatField.getText() + "\n");
-                    network.sendChatMessage(chatField.getText());
+                    network.sendChatMessage(chatField.getText(), board.getMyPlayer());
                 }
                 chatField.clear();
             }
@@ -168,7 +169,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             @Override
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
-                network.sendConditionMessage(Network.ConditionType.COMPLAINT);
+                network.sendConditionMessage(Network.ConditionType.COMPLAINT, board.getMyPlayer());
                 disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
@@ -183,7 +184,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             @Override
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
-                network.sendConditionMessage(Network.ConditionType.VICTORY);
+                network.sendConditionMessage(Network.ConditionType.VICTORY, board.getMyPlayer());
                 disableSelection();
                 Platform.runLater(new Runnable() {
                     @Override
@@ -199,7 +200,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
             public void handle(MouseEvent event) {
                 //Enviar mensagem de reclamacao
                 disableSelection();
-                network.sendConditionMessage(Network.ConditionType.DRAW);
+                network.sendConditionMessage(Network.ConditionType.DRAW, board.getMyPlayer());
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -212,7 +213,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
         buttonRestart.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                network.sendRestartMessage("0");
+                network.sendRestartMessage("0", board.getMyPlayer());
             }
         });
     }
@@ -254,7 +255,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
         }
         if (board.endMove(space)){
             disableSelection();
-            network.sendMoveMessage(board.getMoveFrom(),board.getMoveTo(), 0);
+            network.sendMoveMessage(board.getMoveFrom(),board.getMoveTo(), 0, board.getMyPlayer());
             refreshUI();
             resetSelection();
             Platform.runLater(new Runnable() {
@@ -348,7 +349,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
     public void onConditionMessageReceived(Network.ConditionType type) {
         if (type == Network.ConditionType.COMPLAINT){
             board.revertMove();
-            network.sendMoveMessage(board.getMoveTo(),board.getMoveFrom(), 1);
+            network.sendMoveMessage(board.getMoveTo(),board.getMoveFrom(), 1, board.getMyPlayer());
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
@@ -377,7 +378,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                         disableSelection();
                         buttonWin.setDisable(true);
                         buttonDraw.setDisable(true);
-                        network.sendConfirmationMessage(Network.ConditionType.VICTORY, 1);
+                        network.sendConfirmationMessage(Network.ConditionType.VICTORY, 1, board.getMyPlayer());
                         alert.close();
                     }
 
@@ -389,7 +390,7 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                             }
                         });
                         //disableSelection();
-                        network.sendConfirmationMessage(Network.ConditionType.VICTORY, 0);
+                        network.sendConfirmationMessage(Network.ConditionType.VICTORY, 0, board.getMyPlayer());
                         alert.close();
                     }
                 }
@@ -415,12 +416,12 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                         disableSelection();
                         buttonWin.setDisable(true);
                         buttonDraw.setDisable(true);
-                        network.sendConfirmationMessage(Network.ConditionType.DRAW, 1);
+                        network.sendConfirmationMessage(Network.ConditionType.DRAW, 1, board.getMyPlayer());
                         alert.close();
                     }
 
                     if (alert.getResult() == ButtonType.NO){
-                        network.sendConfirmationMessage(Network.ConditionType.DRAW, 0);
+                        network.sendConfirmationMessage(Network.ConditionType.DRAW, 0, board.getMyPlayer());
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
@@ -562,14 +563,14 @@ public class Controller implements Initializable, Network.NetworkMessaging{
                     alert.showAndWait();
 
                     if (alert.getResult() == ButtonType.YES) {
-                        network.sendRestartMessage("1");
+                        network.sendRestartMessage("1", board.getMyPlayer());
                         startGame();
                         alert.close();
                     }
 
                     if (alert.getResult() == ButtonType.NO){
                         //Close app
-                        network.sendRestartMessage("2");
+                        network.sendRestartMessage("2", board.getMyPlayer());
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
