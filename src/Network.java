@@ -1,20 +1,14 @@
-package sample;
-
 /**
  * Created by yurireis on 13/11/16.
  */
 
-import org.w3c.dom.css.ViewCSS;
-
 import java.io.*;
 //import java.net.*;
 import java.rmi.*;
+import java.util.List;
 
 public class Network{
 
-//    private Socket clientSocket;
-//    private DataOutputStream outToServer;
-//    private DataInputStream inFromServer;
     private MessagingInterface messagingInterface;
     private NetworkMessaging listener;
 
@@ -30,45 +24,14 @@ public class Network{
 
     public void startConnection(){
         try{
-            messagingInterface = (MessagingInterface)Naming.lookup("//localhost/Messaging");
+            messagingInterface = (MessagingInterface)Naming.lookup("//localhost/MessagingInterface");
             System.out.println("Objeto localizado");
-
-//            clientSocket = new Socket("localhost", 6789);
-//            outToServer = new DataOutputStream(clientSocket.getOutputStream());
-//            inFromServer = new DataInputStream(clientSocket.getInputStream());
-//
-//            new Thread()
-//            {
-//                public void run() {
-//                    while (true){
-//                        try{
-//                            String received = inFromServer.readUTF();
-//                            receiveMessage(received);
-//
-//                            Thread.sleep(2000);
-//                        }
-//                        catch (Exception e){
-//                            e.printStackTrace();
-//                            break;
-//                        }
-//                    }
-//                }
-//            }.start();
 
         }
         catch (Exception e){
             e.printStackTrace();
         }
     }
-
-//    public void closeConnection(){
-//        try{
-//            clientSocket.close();
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
 
     public Integer getMyPlayer(){
         try {
@@ -91,7 +54,6 @@ public class Network{
         }
         try{
             messagingInterface.sendRemoteMessage("1-" + message, player);
-            //outToServer.writeUTF("1-" + message);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -104,7 +66,6 @@ public class Network{
         if (type == ConditionType.COMPLAINT){
             try {
                 messagingInterface.sendRemoteMessage("3-3", player);
-                //outToServer.writeUTF("3-3");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -112,7 +73,6 @@ public class Network{
         else if (type == ConditionType.VICTORY){
             try {
                 messagingInterface.sendRemoteMessage("3-1", player);
-                //outToServer.writeUTF("3-1");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -120,7 +80,6 @@ public class Network{
         else{
             try {
                 messagingInterface.sendRemoteMessage("3-2", player);
-                //outToServer.writeUTF("3-2");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,8 +89,6 @@ public class Network{
     public void sendMoveMessage(Integer from, Integer to, Integer reversed, Integer player){
         try{
             messagingInterface.sendRemoteMessage("2-" + from.toString() + "." + to.toString() + "|" + reversed, player);
-            //outToServer.writeUTF("2-" + from.toString() + "." + to.toString() + "|" + reversed);
-            //outToServer.flush();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -142,7 +99,6 @@ public class Network{
         if (type == ConditionType.VICTORY){
             try {
                 messagingInterface.sendRemoteMessage("4-" + status.toString() + "." + "0", player);
-                //outToServer.writeUTF("4-" + status.toString() + "." + "0");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -150,7 +106,6 @@ public class Network{
         else if (type == ConditionType.DRAW){
             try {
                 messagingInterface.sendRemoteMessage("4-" + status.toString() + "." + "1", player);
-                //outToServer.writeUTF("4-" + status.toString() + "." + "1");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -160,7 +115,6 @@ public class Network{
     public void sendRestartMessage(String confirmation, Integer player){
         try {
             messagingInterface.sendRemoteMessage("6-" + confirmation, player);
-            //outToServer.writeUTF("6-" + confirmation);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -269,12 +223,14 @@ public class Network{
         public void run(){
             try {
                 while (shouldContinue){
-                    String message = messagingInterface.getRemoteMessage(player);
-                    if (message != null){
-                        receiveMessage(message);
+                    List<String> messages = messagingInterface.getRemoteMessage(player);
+                    if (messages != null){
+                        for (int i = 0; i<messages.size();i++){
+                            receiveMessage(messages.get(i));
+                        }
                     }
                 }
-                Thread.sleep(1000);
+                Thread.sleep(3000);
             }
             catch(Exception e){
                 e.printStackTrace();

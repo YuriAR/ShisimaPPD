@@ -1,5 +1,3 @@
-package sample;
-
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.ArrayList;
@@ -110,6 +108,7 @@ public class Board {
     }
 
     public void setLocalPlayer(){
+        localPlayerPieces.clear();
         if (myPlayer == 1){
             localPlayerPieces.add(1);
             localPlayerPieces.add(2);
